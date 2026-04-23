@@ -20,16 +20,17 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
 
-    console.log("AuthProvider init - token:", token ? "exists" : "none");
-    console.log("AuthProvider init - userData:", userData);
+    console.log("Loading stored data - token:", token ? "exists" : "none");
+    console.log("Loading stored data - userData:", userData);
 
     if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        console.log("User loaded:", parsedUser);
-      } catch (e) {
-        console.error("Error parsing user data:", e);
+        api.defaults.headers.common["x-auth-token"] = token;
+        console.log("User loaded from storage:", parsedUser.email);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
         localStorage.removeItem("token");
         localStorage.removeItem("user");
       }
@@ -41,20 +42,31 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("Login attempt:", email);
       const response = await api.post("/auth/login", { email, password });
+      console.log("Login response status:", response.status);
+      console.log("Login response data:", response.data);
+
       const { token, user } = response.data;
 
       if (!token || !user) {
-        throw new Error("Invalid response from server");
+        console.error("Invalid response - missing token or user");
+        toast.error("Invalid server response");
+        return false;
       }
 
+      // Save to localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
-      setUser(user);
 
+      // Set token in axios defaults
+      api.defaults.headers.common["x-auth-token"] = token;
+
+      setUser(user);
+      console.log("Login successful! User:", user.email);
+      console.log("Token saved to localStorage");
       toast.success(`Welcome back, ${user.full_name}!`);
       return true;
     } catch (error) {
-      console.error("Login error:", error.response?.data || error.message);
+      console.error("Login error details:", error);
       const errorMessage =
         error.response?.data?.message || "Login failed. Please try again.";
       toast.error(errorMessage);
@@ -63,34 +75,29 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    console.log("Logging out user:", user?.email);
+    console.log("Logging out");
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    delete api.defaults.headers.common["x-auth-token"];
     setUser(null);
     toast.success("Logged out successfully");
   };
-
-  // Role check helpers
-  const isAdmin = user?.role === "admin";
-  const isManager = user?.role === "project_manager" || user?.role === "admin";
-  const isTeamMember = user?.role === "team_member";
 
   const value = {
     user,
     login,
     logout,
+    loading,
     isAuthenticated: !!user,
-    isAdmin,
-    isManager,
-    isTeamMember,
+    isAdmin: user?.role === "admin",
+    isManager: user?.role === "project_manager" || user?.role === "admin",
+    isTeamMember: user?.role === "team_member",
   };
 
-  console.log("AuthContext value:", {
+  console.log("AuthContext state:", {
     isAuthenticated: !!user,
     role: user?.role,
-    isAdmin,
-    isManager,
-    isTeamMember,
+    loading,
   });
 
   return (

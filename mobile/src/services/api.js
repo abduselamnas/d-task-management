@@ -1,5 +1,7 @@
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Use localhost for web, for physical device use your computer's IP
 const API_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
@@ -10,13 +12,15 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Add token to every request
+// Request interceptor - Add token to every request
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
+  async (config) => {
+    // Get token from storage for each request
+    const token = await AsyncStorage.getItem('token');
+    
     console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`, { 
       hasToken: !!token,
-      url: config.url 
+      url: config.url
     });
     
     if (token) {
@@ -36,18 +40,16 @@ api.interceptors.response.use(
     console.log(`📥 ${response.config.url} - Status: ${response.status}`);
     return response;
   },
-  (error) => {
+  async (error) => {
     console.error('API Error:', {
       url: error.config?.url,
       status: error.response?.status,
-      message: error.message,
-      data: error.response?.data
+      message: error.message
     });
     
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
     }
     return Promise.reject(error);
   }

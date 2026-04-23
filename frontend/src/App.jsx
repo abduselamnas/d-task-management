@@ -19,7 +19,12 @@ import Reports from "./pages/Reports";
 
 function App() {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <AuthProvider>
         <Toaster position="top-right" />
         <Routes>
@@ -35,6 +40,7 @@ function App() {
               <Route path="reports" element={<Reports />} />
             </Route>
           </Route>
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
