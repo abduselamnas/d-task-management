@@ -11,7 +11,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 
 const Sidebar = () => {
-  const { isAdmin, isManager, user } = useAuth();
+  const { isAdmin, isManager } = useAuth();
 
   const menuItems = [
     { path: "/dashboard", icon: FiHome, label: "Dashboard", show: true },
@@ -29,7 +29,7 @@ const Sidebar = () => {
       label: "Reports",
       show: isAdmin || isManager,
     },
-    { path: "/settings", icon: FiSettings, label: "Settings", show: true }, // Settings for everyone
+    { path: "/settings", icon: FiSettings, label: "Settings", show: true },
   ];
 
   return (

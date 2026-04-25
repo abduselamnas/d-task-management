@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import {
   FiUser,
   FiBell,
   FiLock,
-  FiGlobe,
   FiMoon,
   FiSun,
   FiSave,
-  FiShield,
-  FiMail,
-  FiSmartphone,
   FiEye,
   FiEyeOff,
 } from "react-icons/fi";
@@ -22,13 +18,11 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Profile settings
   const [profileData, setProfileData] = useState({
-    full_name: "",
-    email: "",
-    role: "",
+    full_name: user?.full_name || "",
+    email: user?.email || "",
   });
 
   // Password settings
@@ -38,57 +32,16 @@ const Settings = () => {
     confirm_password: "",
   });
 
-  // Notification settings
-  const [notificationSettings, setNotificationSettings] = useState({
-    email_notifications: true,
-    task_assigned: true,
-    task_completed: true,
-    project_updates: true,
-    daily_digest: false,
-  });
-
   // Appearance settings
   const [appearance, setAppearance] = useState({
-    theme: "light",
-    compact_view: false,
-    animations: true,
+    theme: localStorage.getItem("theme") || "light",
   });
-
-  useEffect(() => {
-    if (user) {
-      setProfileData({
-        full_name: user.full_name || "",
-        email: user.email || "",
-        role: user.role || "",
-      });
-    }
-    loadSettings();
-  }, [user]);
-
-  const loadSettings = () => {
-    // Load saved settings from localStorage
-    const savedTheme = localStorage.getItem("theme");
-    const savedNotifications = localStorage.getItem("notificationSettings");
-    const savedAppearance = localStorage.getItem("appearance");
-
-    if (savedTheme) {
-      setAppearance((prev) => ({ ...prev, theme: savedTheme }));
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    }
-
-    if (savedNotifications) {
-      setNotificationSettings(JSON.parse(savedNotifications));
-    }
-
-    if (savedAppearance) {
-      setAppearance(JSON.parse(savedAppearance));
-    }
-  };
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Update user profile
       await api.put(`/users/${user.id}`, {
         full_name: profileData.full_name,
       });
@@ -135,30 +88,15 @@ const Settings = () => {
     }
   };
 
-  const handleNotificationChange = (key, value) => {
-    const newSettings = { ...notificationSettings, [key]: value };
-    setNotificationSettings(newSettings);
-    localStorage.setItem("notificationSettings", JSON.stringify(newSettings));
-    toast.success("Notification settings updated");
-  };
-
-  const handleAppearanceChange = (key, value) => {
-    const newAppearance = { ...appearance, [key]: value };
-    setAppearance(newAppearance);
-    localStorage.setItem("appearance", JSON.stringify(newAppearance));
-
-    if (key === "theme") {
-      document.documentElement.classList.toggle("dark", value === "dark");
-      localStorage.setItem("theme", value);
-    }
-
-    toast.success("Appearance settings updated");
+  const handleAppearanceChange = (theme) => {
+    setAppearance({ theme });
+    localStorage.setItem("theme", theme);
+    toast.success(`${theme} mode enabled`);
   };
 
   const tabs = [
     { id: "profile", label: "Profile", icon: FiUser },
     { id: "security", label: "Security", icon: FiLock },
-    { id: "notifications", label: "Notifications", icon: FiBell },
     { id: "appearance", label: "Appearance", icon: FiMoon },
   ];
 
@@ -199,50 +137,41 @@ const Settings = () => {
 
               <div>
                 <label className="input-label">Full Name</label>
-                <div className="relative">
-                  <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    value={profileData.full_name}
-                    onChange={(e) =>
-                      setProfileData({
-                        ...profileData,
-                        full_name: e.target.value,
-                      })
-                    }
-                    className="input-field pl-10"
-                    required
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={profileData.full_name}
+                  onChange={(e) =>
+                    setProfileData({
+                      ...profileData,
+                      full_name: e.target.value,
+                    })
+                  }
+                  className="input-field"
+                  required
+                />
               </div>
 
               <div>
                 <label className="input-label">Email Address</label>
-                <div className="relative">
-                  <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    className="input-field pl-10 bg-gray-100"
-                    disabled
-                  />
-                </div>
+                <input
+                  type="email"
+                  value={profileData.email}
+                  className="input-field bg-gray-100"
+                  disabled
+                />
                 <p className="text-xs text-gray-500 mt-1">
-                  Email cannot be changed. Contact admin for assistance.
+                  Email cannot be changed
                 </p>
               </div>
 
               <div>
                 <label className="input-label">Role</label>
-                <div className="relative">
-                  <FiShield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    value={profileData.role?.replace("_", " ")}
-                    className="input-field pl-10 bg-gray-100 capitalize"
-                    disabled
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={user?.role?.replace("_", " ")}
+                  className="input-field bg-gray-100 capitalize"
+                  disabled
+                />
               </div>
 
               <button
@@ -266,7 +195,6 @@ const Settings = () => {
               <div>
                 <label className="input-label">Current Password</label>
                 <div className="relative">
-                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={passwordData.current_password}
@@ -276,7 +204,7 @@ const Settings = () => {
                         current_password: e.target.value,
                       })
                     }
-                    className="input-field pl-10"
+                    className="input-field"
                     required
                   />
                   <button
@@ -295,21 +223,18 @@ const Settings = () => {
 
               <div>
                 <label className="input-label">New Password</label>
-                <div className="relative">
-                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={passwordData.new_password}
-                    onChange={(e) =>
-                      setPasswordData({
-                        ...passwordData,
-                        new_password: e.target.value,
-                      })
-                    }
-                    className="input-field pl-10"
-                    required
-                  />
-                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={passwordData.new_password}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      new_password: e.target.value,
+                    })
+                  }
+                  className="input-field"
+                  required
+                />
                 <p className="text-xs text-gray-500 mt-1">
                   Password must be at least 6 characters
                 </p>
@@ -317,32 +242,18 @@ const Settings = () => {
 
               <div>
                 <label className="input-label">Confirm New Password</label>
-                <div className="relative">
-                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={passwordData.confirm_password}
-                    onChange={(e) =>
-                      setPasswordData({
-                        ...passwordData,
-                        confirm_password: e.target.value,
-                      })
-                    }
-                    className="input-field pl-10"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  >
-                    {showConfirmPassword ? (
-                      <FiEyeOff size={18} />
-                    ) : (
-                      <FiEye size={18} />
-                    )}
-                  </button>
-                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={passwordData.confirm_password}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      confirm_password: e.target.value,
+                    })
+                  }
+                  className="input-field"
+                  required
+                />
               </div>
 
               <button
@@ -354,120 +265,6 @@ const Settings = () => {
                 <span>{loading ? "Updating..." : "Update Password"}</span>
               </button>
             </form>
-          )}
-
-          {/* Notification Settings */}
-          {activeTab === "notifications" && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Notification Preferences
-              </h2>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-800">
-                      Email Notifications
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Receive email notifications about your activity
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.email_notifications}
-                      onChange={(e) =>
-                        handleNotificationChange(
-                          "email_notifications",
-                          e.target.checked,
-                        )
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-debo-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-debo-primary"></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-800">Task Assigned</p>
-                    <p className="text-sm text-gray-500">
-                      Get notified when a task is assigned to you
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.task_assigned}
-                      onChange={(e) =>
-                        handleNotificationChange(
-                          "task_assigned",
-                          e.target.checked,
-                        )
-                      }
-                      className="sr-only peer"
-                      disabled={!notificationSettings.email_notifications}
-                    />
-                    <div
-                      className={`w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-debo-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-debo-primary ${!notificationSettings.email_notifications ? "opacity-50" : ""}`}
-                    ></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-800">Task Completed</p>
-                    <p className="text-sm text-gray-500">
-                      Get notified when your tasks are completed
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.task_completed}
-                      onChange={(e) =>
-                        handleNotificationChange(
-                          "task_completed",
-                          e.target.checked,
-                        )
-                      }
-                      className="sr-only peer"
-                      disabled={!notificationSettings.email_notifications}
-                    />
-                    <div
-                      className={`w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-debo-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-debo-primary ${!notificationSettings.email_notifications ? "opacity-50" : ""}`}
-                    ></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-800">Project Updates</p>
-                    <p className="text-sm text-gray-500">
-                      Get notified about project changes
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.project_updates}
-                      onChange={(e) =>
-                        handleNotificationChange(
-                          "project_updates",
-                          e.target.checked,
-                        )
-                      }
-                      className="sr-only peer"
-                      disabled={!notificationSettings.email_notifications}
-                    />
-                    <div
-                      className={`w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-debo-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-debo-primary ${!notificationSettings.email_notifications ? "opacity-50" : ""}`}
-                    ></div>
-                  </label>
-                </div>
-              </div>
-            </div>
           )}
 
           {/* Appearance Settings */}
@@ -483,7 +280,7 @@ const Settings = () => {
                   <div className="grid grid-cols-2 gap-4 mt-2">
                     <button
                       type="button"
-                      onClick={() => handleAppearanceChange("theme", "light")}
+                      onClick={() => handleAppearanceChange("light")}
                       className={`p-4 border-2 rounded-lg flex items-center justify-center space-x-2 transition-all ${
                         appearance.theme === "light"
                           ? "border-debo-primary bg-blue-50"
@@ -495,7 +292,7 @@ const Settings = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleAppearanceChange("theme", "dark")}
+                      onClick={() => handleAppearanceChange("dark")}
                       className={`p-4 border-2 rounded-lg flex items-center justify-center space-x-2 transition-all ${
                         appearance.theme === "dark"
                           ? "border-debo-primary bg-blue-50"
@@ -506,46 +303,6 @@ const Settings = () => {
                       <span>Dark</span>
                     </button>
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-800">Compact View</p>
-                    <p className="text-sm text-gray-500">
-                      Show more content by reducing spacing
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={appearance.compact_view}
-                      onChange={(e) =>
-                        handleAppearanceChange("compact_view", e.target.checked)
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-debo-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-debo-primary"></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-800">Animations</p>
-                    <p className="text-sm text-gray-500">
-                      Enable smooth animations throughout the app
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={appearance.animations}
-                      onChange={(e) =>
-                        handleAppearanceChange("animations", e.target.checked)
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-debo-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-debo-primary"></div>
-                  </label>
                 </div>
               </div>
             </div>

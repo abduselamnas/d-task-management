@@ -6,8 +6,7 @@ import {
   FiLock,
   FiUser,
   FiUserPlus,
-  FiLogIn,
-  FiArrowRight,
+  FiArrowLeft,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import api from "../services/api";
@@ -16,7 +15,6 @@ const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -70,6 +68,7 @@ const Register = () => {
     setLoading(true);
 
     try {
+      console.log("Sending registration request...");
       const response = await api.post("/auth/register", {
         full_name: formData.full_name,
         email: formData.email,
@@ -80,18 +79,18 @@ const Register = () => {
       console.log("Registration response:", response.data);
 
       if (response.data.success && response.data.token) {
-        // Auto-login after successful registration
-        const loginSuccess = await login(formData.email, formData.password);
-        if (loginSuccess) {
-          toast.success("🎉 Welcome aboard! Registration successful!");
+        // Save token and user data
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        toast.success("Registration successful! Welcome aboard!");
+
+        // Navigate to dashboard
+        setTimeout(() => {
           navigate("/dashboard");
-        } else {
-          toast.success("Registration successful! Please login.");
-          navigate("/login");
-        }
+        }, 500);
       } else {
-        toast.success("Account created successfully! Please login.");
-        navigate("/login");
+        toast.error(response.data.message || "Registration failed");
       }
     } catch (error) {
       console.error("Registration error:", error);
@@ -109,9 +108,6 @@ const Register = () => {
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         <div className="p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-debo-primary bg-opacity-10 rounded-full mb-4">
-              <FiUserPlus className="text-3xl text-debo-primary" />
-            </div>
             <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
             <p className="text-gray-600 mt-2">Join Debo Task Manager</p>
           </div>
@@ -154,7 +150,7 @@ const Register = () => {
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -162,13 +158,6 @@ const Register = () => {
                   placeholder="•••••• (min. 6 characters)"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
               </div>
             </div>
 
@@ -177,7 +166,7 @@ const Register = () => {
               <div className="relative">
                 <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                   name="confirm_password"
                   value={formData.confirm_password}
                   onChange={handleChange}
@@ -198,11 +187,9 @@ const Register = () => {
               >
                 <option value="team_member">👥 Team Member</option>
                 <option value="project_manager">📊 Project Manager</option>
-                <option value="admin">👑 Admin</option>
               </select>
               <p className="text-xs text-gray-500 mt-1">
-                💡 Note: Admin role requires approval. You'll be registered as
-                team member by default.
+                Note: Admin role requires approval.
               </p>
             </div>
 
@@ -223,22 +210,16 @@ const Register = () => {
           </form>
         </div>
 
-        {/* Updated: "Already have an account?" section */}
         <div className="bg-gray-50 rounded-b-lg p-6 border-t border-gray-200">
           <div className="text-center">
             <p className="text-gray-600">
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="inline-flex items-center space-x-1 text-debo-primary hover:text-debo-secondary font-semibold transition-colors group"
+                className="inline-flex items-center space-x-1 text-debo-primary hover:text-debo-secondary font-semibold"
               >
                 <span>Sign in here</span>
-                <FiLogIn className="text-sm group-hover:translate-x-1 transition-transform" />
               </Link>
-            </p>
-            <p className="text-xs text-gray-400 mt-3">
-              By signing up, you agree to our Terms of Service and Privacy
-              Policy.
             </p>
           </div>
         </div>

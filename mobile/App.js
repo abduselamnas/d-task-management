@@ -11,6 +11,7 @@ import DashboardScreen from './src/screens/DashboardScreen';
 import TasksScreen from './src/screens/TasksScreen';
 import ProjectsScreen from './src/screens/ProjectsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import TaskDetailScreen from './src/screens/TaskDetailScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,6 +45,8 @@ function MainTabs() {
 
 function AppNavigator() {
   const { user, loading } = useAuth();
+
+  console.log('AppNavigator - user:', user?.email, 'loading:', loading);
 
   if (loading) {
     return null;

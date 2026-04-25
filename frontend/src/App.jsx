@@ -16,6 +16,7 @@ import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
 import Teams from "./pages/Teams";
 import Reports from "./pages/Reports";
+import Settings from "./pages/Settings"; // Add this import
 
 function App() {
   return (
@@ -38,6 +39,8 @@ function App() {
               <Route path="tasks" element={<Tasks />} />
               <Route path="teams" element={<Teams />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />{" "}
+              {/* Add this line */}
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -1,23 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
 import { FiMail, FiLock, FiLogIn } from "react-icons/fi";
 import toast from "react-hot-toast";
+import api from "../services/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("Form submitted with:", {
-      email,
-      password: password ? "***" : "",
-    });
 
     if (!email || !password) {
       toast.error("Please fill in all fields");
@@ -27,37 +21,34 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const success = await login(email, password);
-      console.log("Login result:", success);
+      console.log("Sending login request...");
+      const response = await api.post("/auth/login", { email, password });
+      console.log("Login response:", response.data);
 
-      if (success) {
-        console.log("Navigating to dashboard...");
-        navigate("/dashboard");
+      if (response.data.success && response.data.token) {
+        // Save to localStorage
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        toast.success("Login successful!");
+        console.log("Redirecting to dashboard...");
+
+        // Force navigation
+        window.location.href = "/dashboard";
+      } else {
+        toast.error(response.data.message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("An unexpected error occurred");
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const fillAdmin = () => {
-    console.log("Filling admin credentials");
-    setEmail("admin@debo.com");
-    setPassword("Admin@123");
-  };
-
-  const fillManager = () => {
-    console.log("Filling manager credentials");
-    setEmail("manager@debo.com");
-    setPassword("Admin@123");
-  };
-
-  const fillTeam = () => {
-    console.log("Filling team credentials");
-    setEmail("team@debo.com");
-    setPassword("Admin@123");
+  const fillCredentials = (email, password) => {
+    setEmail(email);
+    setPassword(password);
   };
 
   return (
@@ -133,21 +124,21 @@ const Login = () => {
           <div className="space-y-2">
             <button
               type="button"
-              onClick={fillAdmin}
+              onClick={() => fillCredentials("admin@debo.com", "Admin@123")}
               className="w-full text-xs bg-blue-50 text-blue-700 py-1.5 rounded hover:bg-blue-100"
             >
               Admin: admin@debo.com
             </button>
             <button
               type="button"
-              onClick={fillManager}
+              onClick={() => fillCredentials("manager@debo.com", "Admin@123")}
               className="w-full text-xs bg-green-50 text-green-700 py-1.5 rounded hover:bg-green-100"
             >
               Manager: manager@debo.com
             </button>
             <button
               type="button"
-              onClick={fillTeam}
+              onClick={() => fillCredentials("team@debo.com", "Admin@123")}
               className="w-full text-xs bg-purple-50 text-purple-700 py-1.5 rounded hover:bg-purple-100"
             >
               Team Member: team@debo.com

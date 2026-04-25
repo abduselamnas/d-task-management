@@ -1,9 +1,7 @@
 {
   "name": "frontend",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
+  "homepage": "https://abduselamnas.github.io/d-task-managent",
+    "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

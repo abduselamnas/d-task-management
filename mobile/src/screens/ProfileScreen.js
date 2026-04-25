@@ -7,12 +7,11 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
-import { CommonActions } from '@react-navigation/native';
 
 const ProfileScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
@@ -22,20 +21,12 @@ const ProfileScreen = ({ navigation }) => {
           text: 'Logout', 
           style: 'destructive',
           onPress: async () => {
-            try {
-              // Call logout function from context
-              await logout();
-              
-              // Reset navigation stack and go to Login
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: 'Login' }],
-                })
-              );
-            } catch (error) {
-              console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
+            console.log('Logout button pressed');
+            const success = await logout();
+            if (success) {
+              console.log('Logout successful');
+              // The AppNavigator will automatically show Login screen
+              // because user state is now null
             }
           }
         },
