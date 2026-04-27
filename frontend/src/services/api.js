@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use relative path for Vercel (both frontend and backend on same domain)
-const API_URL = '/api';
+// Update to your new backend URL
+const API_URL = 'https://d_task_managent.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,17 +9,5 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-// Add token to every request
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['x-auth-token'] = token;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 export default api;
