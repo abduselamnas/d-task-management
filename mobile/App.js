@@ -12,6 +12,7 @@ import DashboardScreen from './src/screens/DashboardScreen';
 import TasksScreen from './src/screens/TasksScreen';
 import ProjectsScreen from './src/screens/ProjectsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import TaskDetailScreen from './src/screens/TaskDetailScreen';
 
 // Ignore deprecation warnings
 LogBox.ignoreLogs([
@@ -64,6 +65,8 @@ function AppNavigator() {
   useEffect(() => {
     setNavigationKey(prev => prev + 1);
   }, [user]);
+
+  console.log('AppNavigator - user:', user?.email, 'loading:', loading);
 
   if (loading) {
     return null;
