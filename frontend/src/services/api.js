@@ -30,7 +30,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor - Don't redirect on 401 immediately
 api.interceptors.response.use(
   (response) => {
     console.log(`📥 ${response.config.url} - Status: ${response.status}`);
@@ -44,7 +44,8 @@ api.interceptors.response.use(
       data: error.response?.data
     });
     
-    if (error.response?.status === 401) {
+    // Only redirect if not a login request
+    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { CommonActions } from '@react-navigation/native';
 
@@ -23,19 +17,24 @@ const ProfileScreen = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Call logout function from context
-              await logout();
+              console.log('Logout button pressed');
+              const success = await logout();
+              console.log('Logout success:', success);
               
-              // Reset navigation stack and go to Login
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: 'Login' }],
-                })
-              );
+              if (success) {
+                // Reset the navigation stack to Login screen
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Login' }],
+                  })
+                );
+              } else {
+                Alert.alert('Error', 'Failed to logout. Please try again.');
+              }
             } catch (error) {
               console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
+              Alert.alert('Error', 'An error occurred during logout');
             }
           }
         },
@@ -87,6 +86,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E3A8A',
     alignItems: 'center',
     padding: 30,
+    paddingTop: 50,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 15,
     boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 3,
   },
   avatarText: {
     fontSize: 36,
@@ -132,7 +131,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 3,
   },
   statItem: {
     alignItems: 'center',

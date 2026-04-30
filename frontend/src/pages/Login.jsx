@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { FiMail, FiLock, FiLogIn } from "react-icons/fi";
 import toast from "react-hot-toast";
+import logo from "../assets/debo-logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,11 +15,6 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Form submitted with:", {
-      email,
-      password: password ? "***" : "",
-    });
-
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
@@ -28,58 +24,54 @@ const Login = () => {
 
     try {
       const success = await login(email, password);
-      console.log("Login result:", success);
-
       if (success) {
-        console.log("Navigating to dashboard...");
         navigate("/dashboard");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error("An unexpected error occurred");
+      toast.error("Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const fillAdmin = () => {
-    console.log("Filling admin credentials");
-    setEmail("admin@debo.com");
-    setPassword("Admin@123");
-  };
-
-  const fillManager = () => {
-    console.log("Filling manager credentials");
-    setEmail("manager@debo.com");
-    setPassword("Admin@123");
-  };
-
-  const fillTeam = () => {
-    console.log("Filling team credentials");
-    setEmail("team@debo.com");
-    setPassword("Admin@123");
+  const fillCredentials = (email, password) => {
+    setEmail(email);
+    setPassword(password);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-debo-primary to-debo-secondary">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-debo-primary">
-            Debo Task Manager
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A192F] via-[#0B1F3A] to-[#132F4C]">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-6">
+        <div className="text-center mb-6">
+          <img
+            src={logo}
+            alt="Debo Engineering"
+            className="h-12 w-auto mx-auto mb-3"
+          />
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+            Welcome Back
           </h1>
-          <p className="text-gray-600 mt-2">Sign in to your account</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Sign in to your account
+          </p>
+          <p className="text-xs text-amber-500 italic mt-1">
+            "In pursuit of Service"
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="input-label">Email Address</label>
+            <label className="form-label">Email Address</label>
             <div className="relative">
-              <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FiMail
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
+                size={16}
+              />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input-field pl-10"
+                className="form-input pl-9"
                 placeholder="admin@debo.com"
                 required
               />
@@ -87,15 +79,18 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="input-label">Password</label>
+            <label className="form-label">Password</label>
             <div className="relative">
-              <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FiLock
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
+                size={16}
+              />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input-field pl-10"
-                placeholder="Admin@123"
+                className="form-input pl-9"
+                placeholder="••••••"
                 required
               />
             </div>
@@ -104,15 +99,12 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary flex items-center justify-center space-x-2 py-3"
+            className="w-full btn-primary py-2"
           >
             {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <div className="spinner mx-auto"></div>
             ) : (
-              <>
-                <FiLogIn />
-                <span>Sign In</span>
-              </>
+              <span>Sign In</span>
             )}
           </button>
         </form>
@@ -120,40 +112,40 @@ const Login = () => {
         <div className="mt-4 text-center">
           <Link
             to="/register"
-            className="text-debo-primary hover:text-debo-secondary"
+            className="text-sm text-[#0B1F3A] dark:text-amber-500 hover:underline"
           >
             Don't have an account? Sign up
           </Link>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-500 text-center mb-3">
+        <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mb-2">
             Demo Credentials:
           </p>
-          <div className="space-y-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={fillAdmin}
-              className="w-full text-xs bg-blue-50 text-blue-700 py-1.5 rounded hover:bg-blue-100"
+              onClick={() => fillCredentials("admin@debo.com", "Admin@123")}
+              className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 py-1.5 rounded-lg hover:bg-blue-100"
             >
-              Admin: admin@debo.com
+              Admin
             </button>
             <button
               type="button"
-              onClick={fillManager}
-              className="w-full text-xs bg-green-50 text-green-700 py-1.5 rounded hover:bg-green-100"
+              onClick={() => fillCredentials("manager@debo.com", "Admin@123")}
+              className="text-xs bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 py-1.5 rounded-lg hover:bg-green-100"
             >
-              Manager: manager@debo.com
+              Manager
             </button>
             <button
               type="button"
-              onClick={fillTeam}
-              className="w-full text-xs bg-purple-50 text-purple-700 py-1.5 rounded hover:bg-purple-100"
+              onClick={() => fillCredentials("team@debo.com", "Admin@123")}
+              className="text-xs bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 py-1.5 rounded-lg hover:bg-purple-100"
             >
-              Team Member: team@debo.com
+              Team
             </button>
           </div>
-          <p className="text-xs text-gray-400 text-center mt-2">
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-center mt-2">
             Password for all: Admin@123
           </p>
         </div>

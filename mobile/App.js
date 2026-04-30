@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { LogBox } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 
 import LoginScreen from './src/screens/LoginScreen';
@@ -11,6 +12,14 @@ import DashboardScreen from './src/screens/DashboardScreen';
 import TasksScreen from './src/screens/TasksScreen';
 import ProjectsScreen from './src/screens/ProjectsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+
+// Ignore deprecation warnings
+LogBox.ignoreLogs([
+  'props.pointerEvents is deprecated',
+  'Slow network is detected',
+  'DOMNodeInsertedIntoDocument',
+  'shadow.* is deprecated',
+]);
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -21,11 +30,16 @@ function MainTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          if (route.name === 'Dashboard') iconName = focused ? 'home' : 'home-outline';
-          else if (route.name === 'Tasks') iconName = focused ? 'checkbox' : 'checkbox-outline';
-          else if (route.name === 'Projects') iconName = focused ? 'folder' : 'folder-outline';
-          else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
-          return <Icon name={iconName} size={size} color={color} />;
+          if (route.name === 'Dashboard') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Tasks') {
+            iconName = focused ? 'checkbox' : 'checkbox-outline';
+          } else if (route.name === 'Projects') {
+            iconName = focused ? 'folder' : 'folder-outline';
+          } else if (route.name === 'Profile') {
+            iconName = focused ? 'person' : 'person-outline';
+          }
+          return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#1E3A8A',
         tabBarInactiveTintColor: 'gray',
@@ -44,13 +58,19 @@ function MainTabs() {
 
 function AppNavigator() {
   const { user, loading } = useAuth();
+  const [navigationKey, setNavigationKey] = useState(0);
+
+  // Force navigation container to re-render when user changes
+  useEffect(() => {
+    setNavigationKey(prev => prev + 1);
+  }, [user]);
 
   if (loading) {
     return null;
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator key={navigationKey} screenOptions={{ headerShown: false }}>
       {!user ? (
         <>
           <Stack.Screen name="Login" component={LoginScreen} />

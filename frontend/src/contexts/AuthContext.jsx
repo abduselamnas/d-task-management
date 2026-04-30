@@ -42,8 +42,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log("Login attempt:", email);
       const response = await api.post("/auth/login", { email, password });
-      console.log("Login response status:", response.status);
-      console.log("Login response data:", response.data);
+      console.log("Login response:", response.data);
 
       const { token, user } = response.data;
 
@@ -62,14 +61,11 @@ export const AuthProvider = ({ children }) => {
 
       setUser(user);
       console.log("Login successful! User:", user.email);
-      console.log("Token saved to localStorage");
       toast.success(`Welcome back, ${user.full_name}!`);
       return true;
     } catch (error) {
-      console.error("Login error details:", error);
-      const errorMessage =
-        error.response?.data?.message || "Login failed. Please try again.";
-      toast.error(errorMessage);
+      console.error("Login error:", error);
+      toast.error("Login failed. Please try again.");
       return false;
     }
   };

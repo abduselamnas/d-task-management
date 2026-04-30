@@ -7,8 +7,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -25,94 +23,44 @@ const LoginScreen = ({ navigation }) => {
     }
 
     setLoading(true);
-    console.log('Attempting login with:', email);
-    
     const success = await login(email, password);
     setLoading(false);
 
     if (success) {
-      console.log('Login successful, navigating to Main');
-      navigation.replace('Main');
-    }
-  };
-
-  const fillDemo = (role) => {
-    if (role === 'admin') {
-      setEmail('admin@debo.com');
-      setPassword('Admin@123');
-    } else if (role === 'manager') {
-      setEmail('manager@debo.com');
-      setPassword('Admin@123');
-    } else {
-      setEmail('team@debo.com');
-      setPassword('Admin@123');
+      // Navigation happens automatically
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <View style={styles.innerContainer}>
-        <Text style={styles.title}>Debo Task Manager</Text>
-        <Text style={styles.subtitle}>Mobile App</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Debo Task Manager</Text>
+      <Text style={styles.subtitle}>Mobile App</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          placeholderTextColor="#999"
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholderTextColor="#999"
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
 
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={handleLogin} 
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
+      </TouchableOpacity>
 
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.registerLink}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.demoContainer}>
-          <Text style={styles.demoTitle}>Demo Credentials:</Text>
-          <View style={styles.demoButtons}>
-            <TouchableOpacity onPress={() => fillDemo('admin')} style={styles.demoButton}>
-              <Text style={styles.demoButtonText}>Admin</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => fillDemo('manager')} style={styles.demoButton}>
-              <Text style={styles.demoButtonText}>Manager</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => fillDemo('team')} style={styles.demoButton}>
-              <Text style={styles.demoButtonText}>Team</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.demoPassword}>Password for all: Admin@123</Text>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.link}>Don't have an account? Sign Up</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -120,11 +68,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1E3A8A',
-  },
-  innerContainer: {
-    flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    padding: 20,
   },
   title: {
     fontSize: 32,
@@ -159,50 +104,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-  registerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  registerText: {
-    color: '#fff',
-    fontSize: 14,
-    opacity: 0.9,
-  },
-  registerLink: {
+  link: {
     color: '#F59E0B',
+    textAlign: 'center',
+    marginTop: 20,
     fontSize: 14,
-    fontWeight: '600',
-  },
-  demoContainer: {
-    marginTop: 30,
-    alignItems: 'center',
-  },
-  demoTitle: {
-    color: '#fff',
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  demoButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginBottom: 10,
-  },
-  demoButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  demoButtonText: {
-    color: '#fff',
-    fontSize: 14,
-  },
-  demoPassword: {
-    color: '#fff',
-    fontSize: 12,
-    opacity: 0.8,
   },
 });
 
