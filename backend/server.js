@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 
-// CORS configuration - Allow all origins for Railway
+// CORS configuration
 app.use(cors({
     origin: '*',
     credentials: true,
@@ -14,13 +14,13 @@ app.use(cors({
 
 app.use(express.json());
 
-// Health check endpoint (important for Railway)
+// Health check endpoint
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'OK', 
         message: 'Debo Task Management API is running',
         timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'production'
+        environment: process.env.NODE_ENV || 'development'
     });
 });
 
@@ -51,14 +51,14 @@ const users = [
 
 // Mock data
 const projects = [
-    { id: 1, name: 'Debo Task Management System', status: 'active', progress: 75, total_tasks: 10, completed_tasks: 7, manager_name: 'Admin User', team_name: 'Backend Team' },
-    { id: 2, name: 'Mobile App Development', status: 'planning', progress: 30, total_tasks: 8, completed_tasks: 2, manager_name: 'Manager User', team_name: 'Mobile Team' }
+    { id: 1, name: 'Debo Task Management System', status: 'active', progress: 75, total_tasks: 10, completed_tasks: 7, overdue_tasks: 0, manager_name: 'Admin User', team_name: 'Backend Team' },
+    { id: 2, name: 'Mobile App Development', status: 'planning', progress: 30, total_tasks: 8, completed_tasks: 2, overdue_tasks: 1, manager_name: 'Manager User', team_name: 'Mobile Team' }
 ];
 
 const tasks = [
-    { id: 1, title: 'Design Database Schema', status: 'completed', priority: 'high', progress_percentage: 100, project_name: 'Debo Task Management System' },
-    { id: 2, title: 'Implement Authentication API', status: 'completed', priority: 'high', progress_percentage: 100, project_name: 'Debo Task Management System' },
-    { id: 3, title: 'Create React Components', status: 'in_progress', priority: 'high', progress_percentage: 60, project_name: 'Debo Task Management System' }
+    { id: 1, title: 'Design Database Schema', status: 'completed', priority: 'high', progress_percentage: 100, project_name: 'Debo Task Management System', assignee_name: 'Sarah Chen', due_date: '2026-01-15' },
+    { id: 2, title: 'Implement Authentication API', status: 'completed', priority: 'high', progress_percentage: 100, project_name: 'Debo Task Management System', assignee_name: 'Mike Johnson', due_date: '2026-01-20' },
+    { id: 3, title: 'Create React Components', status: 'in_progress', priority: 'high', progress_percentage: 60, project_name: 'Debo Task Management System', assignee_name: 'Team Member', due_date: '2026-02-10' }
 ];
 
 const teams = [
@@ -99,6 +99,8 @@ app.post('/api/auth/login', (req, res) => {
 // Register endpoint
 app.post('/api/auth/register', (req, res) => {
     const { email, password, full_name, role = 'team_member' } = req.body;
+    
+    console.log('Register attempt:', email);
     
     const existingUser = users.find(u => u.email === email);
     if (existingUser) {
@@ -209,6 +211,7 @@ app.get('/api/reports/project-summary', auth, (req, res) => {
         status: p.status,
         total_tasks: p.total_tasks,
         completed_tasks: p.completed_tasks,
+        overdue_tasks: p.overdue_tasks || 0,
         progress_percentage: p.progress,
         manager_name: p.manager_name,
         team_name: p.team_name
@@ -241,7 +244,11 @@ app.get('/api/reports/export/projects', auth, (req, res) => {
     const exportData = projects.map(p => ({
         'Project Name': p.name,
         'Status': p.status,
-        'Progress %': p.progress
+        'Progress %': p.progress,
+        'Total Tasks': p.total_tasks,
+        'Completed Tasks': p.completed_tasks,
+        'Manager': p.manager_name,
+        'Team': p.team_name
     }));
     res.json({ data: exportData });
 });
@@ -257,7 +264,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Internal server error' });
 });
 
-// Start server - Use port from environment variable (Railway sets this)
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`);
